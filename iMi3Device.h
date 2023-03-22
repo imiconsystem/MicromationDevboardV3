@@ -36,6 +36,8 @@ public:
     int getMode(void);
     String getName(void);
     String getIP(void);
+    String getStorage(const char *key);
+    void setHTML(char html[]);
 
 private:
     void setState(int state);
@@ -59,5 +61,6 @@ private:
     int mode;
     int btnState;
     int CountPress;
+    static char html[5000];
 };
 #endif

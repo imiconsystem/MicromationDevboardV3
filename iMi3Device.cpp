@@ -19,9 +19,12 @@ iMi3Device::iMi3Device(String device_name, String device_password, int mode, boo
 {
     this->device_name = device_name;
     this->device_password = device_password;
-    if(mode){
+    if (mode)
+    {
         this->mode = mode;
-    }else{
+    }
+    else
+    {
         this->mode = 1;
     }
     this->debug = debug;
@@ -32,22 +35,32 @@ iMi3Device::iMi3Device(String device_name, String device_password, int mode, boo
 }
 void iMi3Device::doSetup(String ssid, String password)
 {
-    this->host_ssid = ssid;
-    this->host_password = password;
+    if (ssid != "" && password != "")
+    {
+        this->host_ssid = ssid;
+        this->host_password = password;
+    }
+    else
+    {
+        this->host_ssid = this->getStorage("WiFissid");
+        this->host_password = this->getStorage("WiFipassword");
+    }
 
     this->resetbuttonSetup();
 
     if (this->state == 1) // SET
     {
         Serial.println("SET");
-        if (this->debug) {
+        if (this->debug)
+        {
             Serial.println("state SET running config Form");
         }
         this->wifiapSetup(true); // AP for setup
     }
     else if (this->state == 2)
     { // RESET FACTORY
-        if (this->debug) {
+        if (this->debug)
+        {
             Serial.println("state RESET");
         }
         // storageClear();
@@ -56,10 +69,11 @@ void iMi3Device::doSetup(String ssid, String password)
     else
     {
         // RUN
-        if (this->debug){
+        if (this->debug)
+        {
             Serial.println("state RUN");
         }
-            
+
         if (this->mode == 2)
         {
             this->webserverSetup(); // ST mode
@@ -77,7 +91,6 @@ void iMi3Device::doLoop(void)
 
         this->webserverLoop();
         this->clientLoop();
-       
     }
     else
     {
@@ -130,9 +143,33 @@ void iMi3Device::resetbuttonSetup()
 void iMi3Device::storageSetup()
 {
 
+    String WIssid, WIpassword;
+
     preferences.begin(prekey, false);
 
+    WIssid = preferences.getString("WiFissid", "");
+    WIpassword = preferences.getString("WiFipassword", "");
+
+    if (WIssid == "" || WIpassword == "")
+    {
+        preferences.putString("WiFissid", this->host_ssid);
+        preferences.putString("WiFipassword", this->host_password);
+        if (this->debug)
+        {
+            Serial.println("No values saved for WIFssid or WiFipassword");
+            Serial.println("WIFI Credentials Saved using default value.");
+        }
+    }
+
     preferences.end();
+}
+String iMi3Device::getStorage(const char *key)
+{
+    String value;
+    preferences.begin(prekey, false);
+    value = preferences.getString(key);
+    preferences.end();
+    return value;
 }
 // WIFI AP
 void iMi3Device::wifiapSetup(bool isAPSET)
@@ -247,7 +284,7 @@ void iMi3Device::clientLoop()
 void iMi3Device::handleRoot()
 {
     String message = "Hello World";
-    server.send(200, "text/plain", message);
+    server.send(200, "text/plain", this->html);
 }
 void iMi3Device::handleNotFound()
 {
@@ -267,6 +304,7 @@ void iMi3Device::handleNotFound()
 }
 void iMi3Device::handleConfig()
 {
+
     String form = "<!DOCTYPE html><html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><link rel=\"icon\" href=\"data:,\">"
                   "<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}"
                   ".button { background-color: #195B6A; border: none; color: white; padding: 16px 40px;"
@@ -274,7 +312,7 @@ void iMi3Device::handleConfig()
                   ".button2 {background-color: #77878A;}</style></head><body>"
                   "<h1>ESP32 Access Point</h1>"
                   "<p>Connect to WiFi network and open this page to set up the AP</p>"
-                  "<form method='POST' action='/set'>"
+                  "<form method='POST' action='/saveConfig'>"
                   "<label for='ssid'>SSID:</label><br>"
                   "<input type='text' id='ssid' name='ssid' value=''><br>"
                   "<label for='password'>Password:</label><br>"
@@ -290,8 +328,8 @@ void iMi3Device::saveConfig()
     if (ssid != "" && password != "")
     {
         preferences.begin(prekey, false);
-        preferences.putString("ssid", ssid);
-        preferences.putString("password", password);
+        preferences.putString("WiFissid", ssid);
+        preferences.putString("WiFipassword", password);
         preferences.end();
         server.send(200, "text/html", "Configuration saved. Please restart the device.");
     }
@@ -300,6 +338,12 @@ void iMi3Device::saveConfig()
         server.send(200, "text/html", "Please fill in both fields.");
     }
 }
+
+void iMi3Device::setHTML(char html[])
+{
+    this->html = html;
+}
+
 String iMi3Device::getIP(void)
 {
     return this->device_ip;
