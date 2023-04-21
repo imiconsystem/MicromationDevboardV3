@@ -47,7 +47,7 @@ class MicromationDevboardV3
 {
 public:
     // MicromationDevboardV3(String device_name, String device_password, int mode, int oledPage, bool debug);
-    struct MicromationDevboardV3Config
+    struct  iMi3Config
     {
         String device_name;
         String device_password;
@@ -59,7 +59,7 @@ public:
         bool debug;
     };
 
-    MicromationDevboardV3(struct MicromationDevboardV3Config config);
+    MicromationDevboardV3(struct  iMi3Config config);
     void doSetup(void);
     void doLoop(void);
     int getState(void);

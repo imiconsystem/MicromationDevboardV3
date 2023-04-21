@@ -1,6 +1,6 @@
 #include <MicromationDevboardV3.h>
 
-MicromationDevboardV3::MicromationDevboardV3Config config = {
+MicromationDevboardV3::iMi3Config config = {
     "Mi3Dev",                                            // device name
     "dddddddd",                                              // device password
     "yourWiFiSSID",                                                    // WiFi SSID

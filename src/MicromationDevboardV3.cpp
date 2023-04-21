@@ -26,7 +26,7 @@ const char *prekey = "APcredentials";
 
 ezButton cswitch(SW, INPUT_PULLDOWN); // INPUT_PULLDOWN
 
-MicromationDevboardV3::MicromationDevboardV3(struct MicromationDevboardV3Config config)
+MicromationDevboardV3::MicromationDevboardV3(struct iMi3Config config)
 {
     this->html = "Content not found.";
     this->device_name = config.device_name;
