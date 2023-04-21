@@ -1,12 +1,12 @@
 #######################################
-# Syntax Coloring Map For Micromation_Devboard_V3
+# Syntax Coloring Map For MicromationDevboardV3
 #######################################
 
 #######################################
 # Datatypes (KEYWORD1)
 #######################################
 
-Micromation_Devboard_V3	KEYWORD1
+MicromationDevboardV3	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
