@@ -1,12 +1,12 @@
 #######################################
-# Syntax Coloring Map For iMi3Device
+# Syntax Coloring Map For Micromation_Devboard_V3
 #######################################
 
 #######################################
 # Datatypes (KEYWORD1)
 #######################################
 
-iMi3Device	KEYWORD1
+Micromation_Devboard_V3	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
