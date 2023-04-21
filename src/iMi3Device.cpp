@@ -28,24 +28,28 @@ ezButton cswitch(SW, INPUT_PULLDOWN); // INPUT_PULLDOWN
 
 iMi3Device::iMi3Device(struct iMi3DeviceConfig config)
 {
-    this->html = "This is blank html.";
+    this->html = "This is custom HTML content.";
     this->device_name = config.device_name;
     this->device_password = config.device_password;
     this->wifi_ssid = config.wifi_ssid;
     this->wifi_password = config.wifi_password;
     this->mode = config.mode;
-    for(int i = 0; i < 5; i++){
-        this->max_val_label[i] = config.max_val_label[i];
-    }   
-    
+    this->oledPages = config.oledPages;
+    if (config.oledPages > OLED_PAGES)
+    {
+        this->oledPages = OLED_PAGES;
+    }
+    for (int i = 0; i < 5; i++)
+    {
+        this->custom_field_label[i] = config.custom_field_label[i];
+    }
+
     this->debug = config.debug;
     // this->state = 0; // 0 = run, 1 = setup
     this->state = 0;
 
     this->btnState = 0; // 0 = no press, 1 = press, 2 = long press
     this->switchPressTime = 0;
-
-    Serial.println("iMi3Device constructor");
 }
 
 void iMi3Device::doSetup()
@@ -59,10 +63,9 @@ void iMi3Device::doSetup()
     if (this->getState() == 1) // SET
     {
 
-        Serial.println("SET");
         if (this->debug)
         {
-            Serial.println("getState() SET running config Form");
+            this->serialdebug("getState() SET running config Form");
         }
         this->wifiapSetup(true);       // AP for setup
         this->draw_state = OLED_PAGES; // จะแสดงหน้าสุดท้ายของ OLED สำหรับการตั้งค่า
@@ -71,7 +74,7 @@ void iMi3Device::doSetup()
     { // RESET FACTORY
         if (this->debug)
         {
-            Serial.println("state RESET");
+            this->serialdebug("state RESET");
         }
         // storageClear();
         ESP.restart();
@@ -81,36 +84,34 @@ void iMi3Device::doSetup()
         // RUN
         if (this->debug)
         {
-            Serial.println("state RUN");
+            this->serialdebug("state RUN");
         }
 
-        if (this->mode == 2)
+        if (this->getDataInt("dev_run_mode") == 2)
         {
             this->webserverSetup(); // ST mode
         }
-        else
+        else if (this->getDataInt("dev_run_mode") == 1 && this->getState() == 0)
         {
             this->wifiapSetup(false); // AP for Run
+        }
+        else
+        {
+            this->wifiapSetup(true); // SETUP
         }
     }
 }
 void iMi3Device::doLoop(void)
 {
-    Serial.print("Max val label ");
-    Serial.println(this->max_val_label[0]);
-    Serial.println(this->max_val_label[1]);
-    Serial.println(this->max_val_label[2]);
-    Serial.println(this->max_val_label[3]);
-    Serial.println(this->max_val_label[4]);
 
     this->switchLoop();
+    this->oledLoop();
+    this->serialLoop();
 
-    if (this->mode == 2)
+    if (this->getDataInt("dev_run_mode") == 2)
     {
-        this->serialLoop();
         this->webserverLoop();
         this->clientLoop();
-        this->oledLoop();
     }
     else
     {
@@ -120,18 +121,14 @@ void iMi3Device::doLoop(void)
 void iMi3Device::setState(int state)
 {
     this->state = state;
-    String _state[2] = {"0", "1"};
-    this->setStorage("device_state", _state[state]);
+    this->setStorageInt("device_state", state);
 }
 int iMi3Device::getState(void)
 {
-    String _state[2] = {"0", "1"};
-    return this->getData("device_state", _state[this->state]).toInt();
+
+    return this->getDataInt("device_state", this->state);
 }
-int iMi3Device::getMode(void)
-{
-    return this->mode;
-}
+
 String iMi3Device::getName(void)
 {
     return this->getData("device_name", this->device_name);
@@ -171,8 +168,8 @@ void iMi3Device::switchLoop()
             {
                 this->setState(1); // SET
             }
-            String _state[2] = {"0", "1"};
-            this->setStorage("device_state", _state[this->state]);
+
+            this->setStorageInt("device_state", this->state);
             this->beep(NOTE_E6, 100);
             ESP.restart();
         }
@@ -191,35 +188,44 @@ void iMi3Device::switchLoop()
     {
         this->log_string = "The button is pressed";
         if (this->debug)
-            Serial.println("The button is pressed");
+            this->serialdebug("The button is pressed");
     }
 
     if (cswitch.isReleased())
     {
         if (this->debug)
-            Serial.println("The button is released");
+            this->serialdebug("The button is released");
     }
 }
 
 void iMi3Device::beep(int note, int duration)
 {
+    if (this->debug)
+    {
+        this->serialdebug("Beep");
+    }
     tone(BUZZZER_PIN, note, duration);
     delay(duration);
 }
 void iMi3Device::noBeep()
 {
+    if (this->debug)
+    {
+        this->serialdebug("Quiet");
+    }
     noTone(BUZZZER_PIN);
 }
 // Storage
 void iMi3Device::storageSetup()
 {
 
-    String _wifi_ssid, _wifi_password, _webpage_title, _device_name, _device_password, _device_state, _mode;
+    String _wifi_ssid, _wifi_password, _webpage_title, _device_name, _device_password;
+    int _mode, custom1, custom2, custom3, custom4, custom5, _device_state;
 
     preferences.begin(prekey, false);
 
     _wifi_ssid = preferences.getString("wifi_ssid", "");
-    _wifi_password = preferences.getString("_wifi_password", "");
+    _wifi_password = preferences.getString("wifi_password", "");
 
     if (_wifi_ssid == "" || _wifi_password == "")
     {
@@ -227,8 +233,8 @@ void iMi3Device::storageSetup()
         preferences.putString("wifi_password", this->wifi_password);
         if (this->debug)
         {
-            Serial.println("No values saved for WIFssid or WiFipassword");
-            Serial.println("WIFI Credentials Saved using default value.");
+            this->serialdebug("No values saved for WIFssid or WiFipassword");
+            this->serialdebug("WIFI Credentials Saved using default value.");
         }
     }
 
@@ -241,45 +247,69 @@ void iMi3Device::storageSetup()
         preferences.putString("device_password", this->device_password);
         if (this->debug)
         {
-            Serial.println("No values saved for device_name or device_password");
-            Serial.println("Device Credentials Saved using default value.");
+            this->serialdebug("No values saved for device_name or device_password");
+            this->serialdebug("Device Credentials Saved using default value.");
         }
     }
 
-    _webpage_title = preferences.getString("webpage_title", "");
-
-    if (_webpage_title == "")
+    _device_state = preferences.getInt("device_state", 0);
+    if (_device_state == 0)
     {
-        preferences.putString("webpage_title", "iMi3Device");
+        preferences.putInt("device_state", 0);
         if (this->debug)
         {
-            Serial.println("No values saved for webpage_title");
-            Serial.println("Webpage Title Saved using default value.");
+            this->serialdebug("No values saved for device_state");
+            this->serialdebug("Device State Saved using default value.");
         }
     }
 
-    _device_state = preferences.getString("device_state", "");
-    if (_device_state == "")
+    _mode = preferences.getInt("dev_run_mode", 0);
+    if (_mode == 0)
     {
-        preferences.putString("device_state", "0");
+        preferences.putInt("dev_run_mode", this->mode);
         if (this->debug)
         {
-            Serial.println("No values saved for device_state");
-            Serial.println("Device State Saved using default value.");
+            this->serialdebug("No values saved for mode");
+            this->serialdebug("Mode Saved using default value.");
         }
     }
 
-    _mode = preferences.getString("mode", "");
-    if (_mode == "")
+    custom1 = preferences.getInt("custom1", 0);
+    if (custom1 == 0)
     {
-        preferences.putString("mode", "1");
-        if (this->debug)
-        {
-            Serial.println("No values saved for mode");
-            Serial.println("Mode Saved using default value.");
-        }
+        preferences.putInt("custom1", 0);
     }
 
+    custom2 = preferences.getInt("custom2", 0);
+    if (custom2 == 0)
+    {
+        preferences.putInt("custom2", 0);
+    }
+
+    custom3 = preferences.getInt("custom3", 0);
+    if (custom3 == 0)
+    {
+        preferences.putInt("custom3", 0);
+    }
+
+    custom4 = preferences.getInt("custom4", 0);
+    if (custom4 == 0)
+    {
+        preferences.putInt("custom4", 0);
+    }
+
+    custom5 = preferences.getInt("custom5", 0);
+    if (custom5 == 0)
+    {
+        preferences.putInt("custom5", 0);
+    }
+
+    preferences.end();
+}
+void iMi3Device::setStorageInt(const char *key, int value)
+{
+    preferences.begin(prekey, false);
+    preferences.putInt(key, value);
     preferences.end();
 }
 void iMi3Device::setStorage(const char *key, String value)
@@ -296,6 +326,14 @@ String iMi3Device::getStorage(const char *key)
     preferences.end();
     return value;
 }
+int iMi3Device::getStorageInt(const char *key)
+{
+    int value;
+    preferences.begin(prekey, false);
+    value = preferences.getInt(key, 0);
+    preferences.end();
+    return value;
+}
 String iMi3Device::getData(const char *key)
 {
     if (this->getStorage(key) != "")
@@ -305,6 +343,28 @@ String iMi3Device::getData(const char *key)
     else
     {
         return "";
+    }
+}
+int iMi3Device::getDataInt(const char *key)
+{
+    if (this->getStorageInt(key) != 0)
+    {
+        return this->getStorageInt(key);
+    }
+    else
+    {
+        return 0;
+    }
+}
+int iMi3Device::getDataInt(const char *key, int old)
+{
+    if (this->getStorageInt(key) != 0)
+    {
+        return this->getStorageInt(key);
+    }
+    else
+    {
+        return old;
     }
 }
 String iMi3Device::getData(const char *key, String old)
@@ -323,11 +383,11 @@ void iMi3Device::wifiapSetup(bool isAPSET)
 {
     if (this->debug)
     {
-        Serial.println("Configuring access point...");
-        Serial.print("AP Name: ");
-        Serial.println(this->getData("device_name", this->device_name));
-        Serial.print("AP Password: ");
-        Serial.println(this->device_password);
+        this->serialdebug("Configuring access point...");
+        this->serialdebug("AP Name: ");
+        this->serialdebug(this->getData("device_name", this->device_name));
+        this->serialdebug("AP Password: ");
+        this->serialdebug(String(this->device_password));
     }
 
     WiFi.softAP(this->getData("device_name", this->device_name).c_str(), this->getData("device_password", this->device_password).c_str());
@@ -335,11 +395,12 @@ void iMi3Device::wifiapSetup(bool isAPSET)
     this->device_ip = myIP.toString();
     if (this->debug)
     {
-        Serial.print("AP IP address: ");
-        Serial.println(myIP);
+        this->serialdebug("AP IP address: ");
+        this->serialdebug(String(myIP));
     }
     if (isAPSET)
     {
+        this->serialdebug("RUN config server");
         // server.on("/", this->handleConfig);
         String dev_name = this->getData("device_name", this->device_name);
         char html[4000];
@@ -369,15 +430,15 @@ void iMi3Device::wifiapSetup(bool isAPSET)
 <h1>Set max values</h1>\
 </legend>\
 <h1>%s</h1>\
-<div><label>Max </label><input type=\"number\" min=\"0\" max=\"100\" name=\"temp\" value=\"%ld\" size=\"5\"></div>\
+<div><input type=\"number\"  name=\"custom1\" value=\"%ld\" size=\"5\"></div>\
 <h1>%s</h1>\
-<div><label>Max </label><input type=\"number\" min=\"0\" max=\"100\" name=\"humi\" value=\"%ld\" size=\"5\"></div>\
+<div><input type=\"number\"  name=\"custom2\" value=\"%ld\" size=\"5\"></div>\
 <h1>%s</h1>\
-<div><label>Max </label><input type=\"number\" min=\"0\" max=\"999\" name=\"pm1\" value=\"%ld\" size=\"5\"></div>\
+<div><input type=\"number\"  name=\"custom3\" value=\"%ld\" size=\"5\"></div>\
 <h1>%s</h1>\
-<div><label>Max </label><input type=\"number\" min=\"0\" max=\"999\" name=\"pm2\" value=\"%ld\" size=\"5\"></div>\
+<div><input type=\"number\"  name=\"custom4\" value=\"%ld\" size=\"5\"></div>\
 <h1>%s</h1>\
-<div><label>Max </label><input type=\"number\" min=\"0\" max=\"999\" name=\"pm10\" value=\"%ld\" size=\"5\"></div>\
+<div><input type=\"number\"  name=\"custom5\" value=\"%ld\" size=\"5\"></div>\
 </fieldset>\
 <fieldset>\
 <legend>\
@@ -385,10 +446,8 @@ void iMi3Device::wifiapSetup(bool isAPSET)
 </legend>\
 <h1>Device runing mode:</h1>\
 <div><select name=\"devRunmode\"><option value=\"1\">Accesspoint mode</option><option value=\"2\">Station mode</option></select></div>\
-<h1>Device name:</h1>\
-<div><input type=\"text\" name=\"device-name\" value=\"%s\" maxlength=\"10\"></div>\
 <h1>WiFi AP mode credential:</h1>\
-<h3>SSID:</h3>\
+<h3>Device name (SSID):</h3>\
 <div><input type=\"text\" name=\"APssid\" value=\"%s\" maxlength=\"10\"></div>\
 <h3>PASSWORD:</h3>\
 <div><input type=\"text\" name=\"APpassword\" value=\"%s\" maxlength=\"10\"></div>\
@@ -401,17 +460,19 @@ void iMi3Device::wifiapSetup(bool isAPSET)
 </body>\
 </html>",
 
-                 this->getData("WiFissid").c_str(), this->getData("WiFipassword").c_str(),this->max_val_label[0], this->getData("maxVar1").toInt(), this->max_val_label[1],this->getData("maxVar2").toInt(), this->max_val_label[2],this->getData("maxVar3").toInt(), this->max_val_label[3],this->getData("maxVar4").toInt(), this->max_val_label[4],this->getData("maxVar5").toInt(), this->getData("webTitle").c_str(), this->getData("deviceName").c_str(), this->getData("APssid").c_str(), this->getData("APpassword").c_str());
+                 this->getData("wifi_ssid").c_str(), this->getData("wifi_password").c_str(), this->custom_field_label[0].c_str(), this->getData("custom1").toInt(), this->custom_field_label[1].c_str(), this->getData("custom2").toInt(), this->custom_field_label[2].c_str(), this->getData("custom3").toInt(), this->custom_field_label[3].c_str(), this->getData("custom4").toInt(), this->custom_field_label[4].c_str(), this->getData("custom5").toInt(), this->getData("device_name").c_str(), this->getData("device_password").c_str());
 
-        this->html = html;
+        this->systemhtml = html;
 
         server.on("/", [&]()
-                  { server.send(200, "text/html", this->html); });
+                  { server.send(200, "text/html", this->systemhtml); });
         server.on("/saveConfig", this->saveConfig);
     }
     else
     {
+        this->serialdebug("RUN normal server");
         server.on("/", [&]()
+
                   { server.send(200, "text/html", this->html); });
         // server.on("/", this->handleRoot);
     }
@@ -420,40 +481,38 @@ void iMi3Device::wifiapSetup(bool isAPSET)
 
     server.begin();
     if (this->debug)
-        Serial.println("AP mode started");
+        this->serialdebug("AP mode started");
 }
 // WIFI STA
-unsigned long webpreviousMillis = 0;
-unsigned long interval = 30000;
 
 void iMi3Device::webserverSetup()
 {
     unsigned long webcurrentMillis = millis();
     if (this->debug)
     {
-        Serial.println("WiFissid");
-        Serial.println(this->wifi_ssid);
-        Serial.println("WiFipassword");
-        Serial.println(this->wifi_password);
+        this->serialdebug("WiFissid");
+        this->serialdebug(this->getData("wifi_ssid", this->wifi_ssid));
+        this->serialdebug("WiFipassword");
+        this->serialdebug(this->getData("wifi_password", this->wifi_password));
     }
 
     WiFi.mode(WIFI_STA);
-    WiFi.begin(this->wifi_ssid.c_str(), this->wifi_password.c_str());
+    WiFi.begin(this->getData("wifi_ssid", this->wifi_ssid).c_str(), this->getData("wifi_password", this->wifi_password).c_str());
 
     // Wait for connection
-    while (WiFi.status() != WL_CONNECTED && (webcurrentMillis - webpreviousMillis >= interval))
+    while (WiFi.status() != WL_CONNECTED && (webcurrentMillis - this->webpreviousMillis >= this->devinterval))
     {
-        // Serial.println(WiFi.status());
+        // this->serialdebug(WiFi.status());
         delay(1000);
-        webpreviousMillis = webcurrentMillis;
+        this->webpreviousMillis = webcurrentMillis;
     }
 
     if (MDNS.begin(this->getData("device_name", this->device_name).c_str()))
     {
         if (this->debug)
         {
-            Serial.println("MDNS responder started");
-            Serial.println(this->getData("device_name", this->device_name));
+            this->serialdebug("MDNS responder started");
+            this->serialdebug(this->getData("device_name", this->device_name));
         }
     }
 
@@ -465,24 +524,24 @@ void iMi3Device::webserverSetup()
 
     server.begin();
     if (this->debug)
-        Serial.println("HTTP server started");
+        this->serialdebug("HTTP server started");
 }
-unsigned long serpreviousMillis = 0;
+
 void iMi3Device::webserverLoop()
 {
     unsigned long sercurrentMillis = millis();
 
     // if WiFi is down, try reconnecting every CHECK_WIFI_TIME seconds
-    while ((WiFi.status() != WL_CONNECTED) && (sercurrentMillis - serpreviousMillis >= interval))
+    while ((WiFi.status() != WL_CONNECTED) && (sercurrentMillis - this->serpreviousMillis >= this->devinterval))
     {
-        // Serial.println(WiFi.status());
+        // this->serialdebug(WiFi.status());
         if (this->debug)
-            Serial.println("Reconnecting to WiFi...");
+            this->serialdebug("Reconnecting to WiFi...");
 
         WiFi.disconnect();
         WiFi.reconnect();
         delay(1000);
-        serpreviousMillis = sercurrentMillis;
+        this->serpreviousMillis = sercurrentMillis;
     }
 
     // this->log_string = WiFi.localIP().toString();
@@ -492,10 +551,10 @@ void iMi3Device::webserverLoop()
         this->device_ip = WiFi.localIP().toString();
         if (this->debug)
         {
-            // Serial.print("Connected to ");
-            // Serial.println(this->wifi_ssid);
-            // Serial.print("IP address: ");
-            // Serial.println(WiFi.localIP());
+            // this->serialdebug("Connected to ");
+            // this->serialdebug(this->wifi_ssid);
+            // this->serialdebug("IP address: ");
+            // this->serialdebug(WiFi.localIP());
         }
     }
 
@@ -559,20 +618,96 @@ void iMi3Device::handleConfig()
 }
 void iMi3Device::saveConfig()
 {
-    String ssid = server.arg("ssid");
-    String password = server.arg("password");
-    if (ssid != "" && password != "")
+
+    int custom1, custom2, custom3, custom4, custom5, _devRunmode;
+
+    custom1 = custom2 = custom3 = custom4 = custom5 = _devRunmode = 0;
+
+    String message = "<h3>Data saved.<br></h3><hr>";
+    String WIFIssid, WIFIpassword, APssid, APpassword, _webTitle, _deviceName;
+    // message += (server.method() == HTTP_GET) ? "GET" : "POST";
+    for (uint8_t i = 0; i < server.args(); i++)
     {
-        preferences.begin(prekey, false);
-        preferences.putString("WiFissid", ssid);
-        preferences.putString("WiFipassword", password);
-        preferences.end();
-        server.send(200, "text/html", "Configuration saved. Please restart the device.");
+        message += " <b>" + server.argName(i) + ":</b> ______" + server.arg(i) + "______<br>\n";
+        if (server.argName(i) == "devRunmode")
+        {
+            _devRunmode = server.arg(i).toInt();
+        }
+        else if (server.argName(i) == "APssid")
+        {
+            APssid = server.arg(i);
+        }
+        else if (server.argName(i) == "APpassword")
+        {
+            APpassword = server.arg(i);
+        }
+        else if (server.argName(i) == "WiFissid")
+        {
+            WIFIssid = server.arg(i);
+        }
+        else if (server.argName(i) == "WiFipassword")
+        {
+            WIFIpassword = server.arg(i);
+        }
+        else if (server.argName(i) == "custom1")
+        {
+            custom1 = server.arg(i).toInt();
+        }
+        else if (server.argName(i) == "custom2")
+        {
+            custom2 = server.arg(i).toInt();
+        }
+        else if (server.argName(i) == "custom3")
+        {
+            custom3 = server.arg(i).toInt();
+        }
+        else if (server.argName(i) == "custom4")
+        {
+            custom4 = server.arg(i).toInt();
+        }
+        else if (server.argName(i) == "custom5")
+        {
+            custom5 = server.arg(i).toInt();
+        }
+        else if (server.argName(i) == "web-title")
+        {
+            _webTitle = server.arg(i);
+        }
+        else if (server.argName(i) == "device-name")
+        {
+            _deviceName = server.arg(i);
+        }
     }
-    else
-    {
-        server.send(200, "text/html", "Please fill in both fields.");
-    }
+    message += "<html><head><meta charset=\"UTF-8\">\
+  <style>\
+   html{width:100%%;height:100%%}body{margin:30px;background:#005157;font-family:Arial,Helvetica,sans-serif;color:#eee}\
+</style></head><body><script>alert('Saving data please wait until device restarted.');</script><br>Configuration saved. Please restart the device.<br></body></html>";
+    server.send(200, "text/html", message);
+
+    iMi3Device device(
+        {
+            "", // device name
+            "", // device password
+            "", // WiFi SSID
+            "", // WiFi password
+            {}, // Max value label
+            1,
+            2,    // mode 1 = AP, 2 = STA
+            false // debug mode
+        });
+
+    device.setStorageInt("dev_run_mode", _devRunmode);
+    device.setStorage("device_name", APssid);
+    device.setStorage("device_password", APpassword);
+    device.setStorage("wifi_ssid", WIFIssid);
+    device.setStorage("wifi_password", WIFIpassword);
+    device.setStorageInt("custom1", custom1);
+    device.setStorageInt("custom2", custom2);
+    device.setStorageInt("custom3", custom3);
+    device.setStorageInt("custom4", custom4);
+    device.setStorageInt("custom5", custom5);
+    device.setStorageInt("device_state", 0); // Back to run mode
+    ESP.restart();
 }
 
 String iMi3Device::getIP(void)
@@ -588,17 +723,16 @@ void iMi3Device::oledSetup(void)
     u8g2.setFontMode(0); // enable transparent mode, which is faster
 }
 
-unsigned long oledpreviousMillis = 0; // will store last time LED was updated
 void iMi3Device::oledLoop(void)
 {
-    // Serial.println("PAGES: " + String(this->draw_state));
-    // Serial.println("OLED PAGES: " + String(this->oledPages));
+    // this->serialdebug("PAGES: " + String(this->draw_state));
+    // this->serialdebug("OLED PAGES: " + String(this->oledPages));
     unsigned long oledcurrentMillis = millis();
-    // Serial.println(oledcurrentMillis - oledpreviousMillis);
+    // this->serialdebug(oledcurrentMillis - this->oledpreviousMillis);
 
-    if (oledcurrentMillis - oledpreviousMillis >= 5000)
+    if (oledcurrentMillis - this->oledpreviousMillis >= 5000)
     {
-        oledpreviousMillis = oledcurrentMillis;
+        this->oledpreviousMillis = oledcurrentMillis;
 
         u8g2.firstPage();
         do
@@ -608,13 +742,13 @@ void iMi3Device::oledLoop(void)
 
         if (this->getState() == 1)
         {
-            this->draw_state = OLED_PAGES; // if RESET state, draw last page only
+            this->draw_state = 0; // if RESET state, draw last page only
         }
         else
         {
             this->draw_state++;
-            if (this->draw_state > OLED_PAGES)
-                this->draw_state = 1;
+            if (this->draw_state > this->oledPages)
+                this->draw_state = 0;
         }
 
         // delay(3000);
@@ -634,7 +768,7 @@ void iMi3Device::oledDrawState()
     case 3:
         oledDrawPage3();
         break;
-    case 4:
+    case 0:
         oledDrawSysPage();
         break;
     }
@@ -670,11 +804,11 @@ void iMi3Device::oledDrawState()
 void iMi3Device::oledDrawPage1(void)
 {
     // Page breadcum
-    u8g2.drawBox(93, 29, 6, 3);
-    u8g2.drawFrame(93, 29, 6, 3);
-    u8g2.drawFrame(102, 29, 6, 3);
-    u8g2.drawFrame(111, 29, 6, 3);
-    u8g2.drawFrame(120, 29, 6, 3);
+    // u8g2.drawBox(93, 29, 6, 3);
+    // u8g2.drawFrame(93, 29, 6, 3);
+    // u8g2.drawFrame(102, 29, 6, 3);
+    // u8g2.drawFrame(111, 29, 6, 3);
+    // u8g2.drawFrame(120, 29, 6, 3);
 
     if (this->message[0].tp == 1)
     {
@@ -686,48 +820,51 @@ void iMi3Device::oledDrawPage1(void)
     }
     else if (this->message[0].tp == 2)
     {
-        u8g2.setFont(u8g2_font_ncenB10_tr);
-        u8g2.drawStr(0, 12, this->message[0].msg1.c_str());
-        u8g2.setFont(u8g2_font_5x8_tf);
-        u8g2.drawStr(0, 25, this->message[0].msg2.c_str());
-        u8g2.drawStr(30, 25, this->message[0].msg3.c_str());
-        u8g2.drawStr(40, 25, this->message[0].msg4.c_str());
+        u8g2.setFont(u8g2_font_squeezed_b7_tr);
+        u8g2.drawStr(0, 8, this->message[0].msg1.c_str());
+        u8g2.drawStr(91, 30, this->message[0].msg2.c_str());
+        u8g2.setFont(u8g2_font_6x12_t_symbols);
+        u8g2.setFont(u8g2_font_7_Seg_33x19_mn);
+        u8g2.drawStr(30, 0, u8x8_u8toa(this->message[0].msg5 > 999 ? 999 : this->message[0].msg5, 3));
     }
-    else
-    {
-        u8g2.setFont(u8g2_font_5x8_tf);
-        u8g2.drawStr(0, 6, this->message[0].msg1.c_str());
-        u8g2.drawStr(0, 14, this->message[0].msg2.c_str());
-        u8g2.drawStr(0, 22, this->message[0].msg3.c_str());
-        u8g2.drawStr(0, 30, this->message[0].msg4.c_str());
-    }
-    u8g2.drawFrame(3, 7, 25, 15);
 }
 
 void iMi3Device::oledDrawPage2(void)
 {
     // Page breadcum
-    u8g2.drawBox(102, 29, 6, 3);
-    u8g2.drawFrame(93, 29, 6, 3);
-    u8g2.drawFrame(102, 29, 6, 3);
-    u8g2.drawFrame(111, 29, 6, 3);
-    u8g2.drawFrame(120, 29, 6, 3);
+    // u8g2.drawBox(102, 29, 6, 3);
+    // u8g2.drawFrame(93, 29, 6, 3);
+    // u8g2.drawFrame(102, 29, 6, 3);
+    // u8g2.drawFrame(111, 29, 6, 3);
+    // u8g2.drawFrame(120, 29, 6, 3);
 
-    u8g2.setFont(u8g2_font_5x8_tf);
-    u8g2.drawStr(0, 6, this->message[1].msg1.c_str());
-    u8g2.drawStr(0, 14, this->message[1].msg2.c_str());
-    u8g2.drawStr(0, 22, this->message[1].msg3.c_str());
-    u8g2.drawStr(0, 30, this->message[1].msg4.c_str());
+    if (this->message[1].tp == 1)
+    {
+        u8g2.setFont(u8g2_font_5x8_tf);
+        u8g2.drawStr(0, 10, this->message[1].msg1.c_str());
+        u8g2.drawStr(0, 16, this->message[1].msg2.c_str());
+        u8g2.drawStr(0, 24, this->message[1].msg3.c_str());
+        u8g2.drawStr(0, 32, this->message[1].msg4.c_str());
+    }
+    else if (this->message[1].tp == 2)
+    {
+        u8g2.setFont(u8g2_font_squeezed_b7_tr);
+        u8g2.drawStr(0, 8, this->message[1].msg1.c_str());
+        u8g2.drawStr(91, 30, this->message[1].msg2.c_str());
+        u8g2.setFont(u8g2_font_6x12_t_symbols);
+        u8g2.setFont(u8g2_font_7_Seg_33x19_mn);
+        u8g2.drawStr(30, 0, u8x8_u8toa(this->message[1].msg5 > 999 ? 999 : this->message[1].msg5, 3));
+    }
 }
 
 void iMi3Device::oledDrawPage3(void)
 {
     // Page breadcum
-    u8g2.drawBox(111, 29, 6, 3);
-    u8g2.drawFrame(93, 29, 6, 3);
-    u8g2.drawFrame(102, 29, 6, 3);
-    u8g2.drawFrame(111, 29, 6, 3);
-    u8g2.drawFrame(120, 29, 6, 3);
+    // u8g2.drawBox(111, 29, 6, 3);
+    // u8g2.drawFrame(93, 29, 6, 3);
+    // u8g2.drawFrame(102, 29, 6, 3);
+    // u8g2.drawFrame(111, 29, 6, 3);
+    // u8g2.drawFrame(120, 29, 6, 3);
 
     u8g2.setFont(u8g2_font_5x8_tf);
     u8g2.drawStr(0, 6, message[2].msg1.c_str());
@@ -739,11 +876,11 @@ void iMi3Device::oledDrawPage3(void)
 void iMi3Device::oledDrawSysPage(void)
 {
     // Page breadcum
-    u8g2.drawBox(120, 29, 6, 3);
-    u8g2.drawFrame(93, 29, 6, 3);
-    u8g2.drawFrame(102, 29, 6, 3);
-    u8g2.drawFrame(111, 29, 6, 3);
-    u8g2.drawFrame(120, 29, 6, 3);
+    // u8g2.drawBox(120, 29, 6, 3);
+    // u8g2.drawFrame(93, 29, 6, 3);
+    // u8g2.drawFrame(102, 29, 6, 3);
+    // u8g2.drawFrame(111, 29, 6, 3);
+    // u8g2.drawFrame(120, 29, 6, 3);
 
     String WiFiRSSI;
 
@@ -757,22 +894,24 @@ void iMi3Device::oledDrawSysPage(void)
 
     u8g2.setFont(u8g2_font_siji_t_6x10);
     u8g2.drawGlyph(0, 8, 0xE219); // wifi
-    if (this->mode == 2)
+    if (this->getDataInt("dev_run_mode") == 2)
         u8g2.drawGlyph(0, 16, 0xE0F2); // rssi
 
     u8g2.setFont(u8g2_font_squeezed_b7_tr);
-    if (this->getState() == 0)
+    if (this->getState() == 0 && this->getDataInt("dev_run_mode") == 2)
     {
-        u8g2.drawStr(15, 8, this->wifi_ssid.c_str()); // STA mode
+        u8g2.drawStr(15, 8, this->getData("wifi_ssid", this->wifi_ssid).c_str()); // STA mode
         u8g2.drawStr(15, 17, WiFiRSSI.c_str());
-        u8g2.drawStr(0, 26, "Mo:");
-        u8g2.drawStr(20, 26, devMode[this->mode - 1].c_str());
-        u8g2.drawStr(50, 17, staIP.c_str());
+        u8g2.drawFrame(10, 21, 20, 11);
+        u8g2.drawStr(16, 30, devMode[this->getDataInt("dev_run_mode") - 1].c_str());
+        u8g2.drawStr(40, 17, staIP.c_str());
+        String domain = this->getData("device_name") + ".local";
+        u8g2.drawStr(40, 25, domain.c_str());
     }
     else
     {
         u8g2.drawStr(15, 8, this->getData("device_name").c_str()); // AP mode
-        u8g2.drawStr(15, 17, this->device_password.c_str());
+        u8g2.drawStr(15, 17, this->getData("device_password", this->device_password).c_str());
         // u8g2.drawStr(50, 17, apIP.toString().c_str());
         u8g2.drawStr(15, 26, apIP.toString().c_str()); // Reset state
     }
@@ -810,31 +949,38 @@ void iMi3Device::readSerial(const uint8_t index, struct iMi3Device::iMi3SerialIn
 
 void iMi3Device::serialSetup()
 {
-    Serial2.begin(9600); //
+    Serial2.begin(4800); //
 }
-unsigned long serialpreviousMillis = 0; // will store last time LED was updated
+
 void iMi3Device::serialLoop()
 {
-    int baudrate = 9600;
+    int baudrate = 4800;
     int numBytes = 8;
     byte buffQuery[8];
+
     for (int i = 1; i <= SERIAL_INPUTS; i++)
     {
 
         unsigned long serialcurrentMillis = millis();
-        // Serial.println(serialcurrentMillis - oledpreviousMillis);
 
-        if (serialcurrentMillis - serialpreviousMillis >= 1000)
+        if (serialcurrentMillis - this->serialpreviousMillis >= 1000)
         {
-            serialpreviousMillis = serialcurrentMillis;
+            this->serialpreviousMillis = serialcurrentMillis;
             if (this->serialInput[i].buadrate > 0)
             {
-                baudrate = this->serialInput[i].buadrate;
-            }
-            Serial2.updateBaudRate(baudrate);
-            memcpy(buffQuery, this->serialInput[i].request_command, numBytes);
+                if (this->debug)
+                {
+                    this->serialdebug("Serial: " + this->serialInput[i].name);
+                    this->serialdebug("Baudrate: " + String(this->serialInput[i].buadrate));
+                }
 
-            this->SerialProcessData(buffQuery);
+                baudrate = this->serialInput[i].buadrate;
+                Serial2.updateBaudRate(baudrate);
+
+                memcpy(buffQuery, this->serialInput[i].request_command, numBytes);
+
+                this->SerialProcessData(buffQuery);
+            }
         }
     }
 }
@@ -852,8 +998,8 @@ void iMi3Device::SerialProcessData(byte buffQuery[8])
     while (Serial2.available() > 0)
     {
         ByteArray[a] = Serial2.read();
-        // Serial.print(ByteArray[a]);
-        // Serial.print(" ");
+        // this->serialdebug(ByteArray[a]);
+        // this->serialdebug(" ");
         a++;
     }
 
@@ -864,12 +1010,16 @@ void iMi3Device::SerialProcessData(byte buffQuery[8])
     Data1 = ByteData[0];
     Data2 = ByteData[1];
 
-    // Serial.print(ByteArray[0]);
-    // Serial.print(" ");
-    // Serial.print(Data1);
-    // Serial.print(" ");
-    // Serial.print(Data2);
-    // Serial.println(" ");
+    if (this->debug)
+    {
+        this->serialdebug("ID: ");
+        this->serialdebug(String(ByteArray[0]));
+        this->serialdebug(" Data1: ");
+        this->serialdebug(String(Data1));
+        this->serialdebug(" Data2: ");
+        this->serialdebug(String(Data2));
+        this->serialdebug(" ");
+    }
 
     this->serialData.id = ByteArray[0];
     this->serialData.data1 = Data1;
@@ -905,16 +1055,31 @@ void iMi3Device::relaySetup()
 
 void iMi3Device::relayHi(int relay)
 {
-
+    if (this->debug)
+        this->serialdebug("PIN: " + String(relay) + " ON");
+        
     digitalWrite(relay, HIGH);
 }
 
 void iMi3Device::relayLo(int relay)
 {
+    if (this->debug)
+        this->serialdebug("PIN: " + String(relay) + " OFF");
     digitalWrite(relay, LOW);
 }
 
 bool iMi3Device::relayIsOn(int relay)
 {
     return digitalRead(relay) == HIGH;
+}
+
+void iMi3Device::serialdebug(String msg)
+{
+    unsigned long debugcurrentMillis = millis();
+
+    if (debugcurrentMillis - this->debugpreviousMillis >= 1000)
+    {
+        this->debugpreviousMillis = debugcurrentMillis;
+        Serial.println(msg);
+    }
 }

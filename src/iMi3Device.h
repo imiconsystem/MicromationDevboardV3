@@ -28,7 +28,7 @@
 #ifndef iMi3Device_h
 #define iMi3Device_h
 
-#define OLED_PAGES 4 // จำนวนหน้าที่จะแสดงผลบนจอ OLED สงวนหน้าสุดท้ายสำหรับการแสดงผลของระบบ
+#define OLED_PAGES 3 // จำนวนหน้าที่จะแสดงผลบนจอ OLED สงวนหน้าสุดท้ายสำหรับการแสดงผลของระบบ
 #define PAGE_1 1
 #define PAGE_2 2
 #define PAGE_3 3
@@ -37,6 +37,8 @@
 #define SERIAL_INPUT1 1
 #define SERIAL_INPUT2 2
 #define SERIAL_INPUT3 3
+
+#define CUSTOM_FIELDS 5 // จำนวน Custom Field ที่ใช้งานได้
 
 #include <Arduino.h>
 #include <U8g2lib.h>
@@ -51,8 +53,9 @@ public:
         String device_password;
         String wifi_ssid;
         String wifi_password;
-        String max_val_label[5];
+        String custom_field_label[CUSTOM_FIELDS];
         int mode;
+        int oledPages;
         bool debug;
     };
 
@@ -60,11 +63,14 @@ public:
     void doSetup(void);
     void doLoop(void);
     int getState(void);
-    int getMode(void);
+    // int getMode(void);
     String getName(void);
     String getIP(void);
     String getData(const char *key);
     String getData(const char *key, String old);
+    int getDataInt(const char *key);
+    int getDataInt(const char *key, int old);
+
     static void handleRoot(void);
     String html = "";
     struct iMi3OledMessage
@@ -74,7 +80,7 @@ public:
         String msg2;
         String msg3;
         String msg4;
-        String msg5;
+        int msg5;
     };
     struct iMi3SerialInput
     {
@@ -127,7 +133,9 @@ private:
     void SerialProcessData(byte buffQuery[8]);
     void relaySetup(void);
     String getStorage(const char *key);
+    int getStorageInt(const char *key);
     void setStorage(const char *key, String value);
+    void setStorageInt(const char *key, int value);
     static void handleNotFound(void);
     static void handleConfig(void);
     static void saveConfig(void);
@@ -137,7 +145,7 @@ private:
     String device_ip;
     String wifi_ssid = "";
     String wifi_password = "";
-    String max_val_label[5] = {"Max val1", "Max val2", "Max val3", "Max val4","Max val5"};
+    String custom_field_label[CUSTOM_FIELDS] = {"Max val1", "Max val2", "Max val3", "Max val4", "Max val5"};
     bool debug = false;
     String log_string = "";
     int state;
@@ -145,5 +153,15 @@ private:
     int oledPages = 1;
     int btnState;
     int CountPress;
+    String systemhtml = "";
+
+    unsigned long webpreviousMillis = 0;
+    unsigned long devinterval = 30000;
+    unsigned long serpreviousMillis = 0;
+    unsigned long oledpreviousMillis = 0; // will store last time LED was updated
+    unsigned long serialpreviousMillis = 0; // will store last time LED was updated
+    unsigned long debugpreviousMillis = 0; // will store last time LED was updated
+    
+    void serialdebug(String msg);
 };
 #endif
