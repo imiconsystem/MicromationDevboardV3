@@ -1,17 +1,17 @@
-#include <iMi3Device.h>
+#include <MicromationDevboardV3.h>
 
-iMi3Device::iMi3DeviceConfig config = {
-    "iMi3Device",                                            // device name
+MicromationDevboardV3::MicromationDevboardV3Config config = {
+    "Mi3Dev",                                            // device name
     "dddddddd",                                              // device password
     "yourWiFiSSID",                                          // WiFi SSID
     "yourWiFiPass",                                          // WiFi password
     {"Custom1", "Custom2", "Custom3", "Custom4", "Custom5"}, // Custom field labels
     2,                                                       // mode 1 = AP, 2 = STA
     2,                                                       // OLED pages
-    false                                                    // debug mode
+    true                                                    // debug mode
 };
 
-iMi3Device iMi3(config);
+MicromationDevboardV3 iMi3(config);
 
 void setup()
 {

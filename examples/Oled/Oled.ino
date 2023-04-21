@@ -1,17 +1,17 @@
-#include <iMi3Device.h>
+#include <MicromationDevboardV3.h>
 
-iMi3Device::iMi3DeviceConfig config = {
-    "iMi3Device",                                            // device name
+MicromationDevboardV3::MicromationDevboardV3Config config = {
+    "Mi3Dev",                                            // device name
     "dddddddd",                                              // device password
     "yourWiFiSSID",                                          // WiFi SSID
     "yourWiFiPass",                                          // WiFi password
     {"Custom1", "Custom2", "Custom3", "Custom4", "Custom5"}, // Custom field labels
     2,                                                       // mode 1 = AP, 2 = STA
-    1,                                                       // OLED pages
+    2,                                                       // OLED pages (max 2)
     true                                                     // debug mode
 };
 
-iMi3Device iMi3(config);
+MicromationDevboardV3 iMi3(config);
 
 void setup()
 {
@@ -19,28 +19,34 @@ void setup()
     iMi3.doSetup(); // Device setup (must be called in setup)
 }
 
-unsigned long previousMillis = 0;
-unsigned long interval = 1000;
-
 void loop()
 {
     iMi3.doLoop(); // Device loop (must be called in loop)
+    oledLoop();
+}
 
-    unsigned long currentMillis = millis();
-    while (currentMillis - previousMillis >= interval) // None blocking delay
-    {
-        previousMillis = currentMillis;
-        Serial.print("WiFi SSID: ");
-        Serial.println(iMi3.getData("wifi_ssid"));
-        Serial.print("WiFi pass: ");
-        Serial.println(iMi3.getData("wifi_password"));
-        Serial.print("Device state: "); // 0 = run, 1 = setup
-        Serial.println(iMi3.getState());
-        Serial.print("Device run mode: "); // mode 1 = AP, 2 = STA
-        Serial.println(iMi3.getDataInt("dev_run_mode"));
-        Serial.print("Device name (SSID): ");
-        Serial.println(iMi3.getData("device_name"));
-        Serial.print("Devvice pass: ");
-        Serial.println(iMi3.getData("device_password"));
-    }
+void oledLoop(void) {
+  int WINSPD = random(1, 500);
+  String msg1;
+  msg1 = "Wind speed =  ";
+  msg1.concat(WINSPD);
+
+  MicromationDevboardV3::iMi3OledMessage myMsg[3];
+
+  myMsg[0].tp = 2;  // Template ID 2 
+  myMsg[0].msg1 = "SPD"; // Top left text
+  myMsg[0].msg2 = "km/h"; // Bottom right text
+  myMsg[0].msg3 = "";
+  myMsg[0].msg4 = "";
+  myMsg[0].msg5 = round(WINSPD); // Interger value
+  iMi3.printScreen(PAGE_1, myMsg[0]);
+
+  myMsg[1].tp = 1; // Template ID 1
+  myMsg[1].msg1 = msg1.c_str(); // line 1 display concat string
+  myMsg[1].msg2 = "Second line"; // line 2
+  myMsg[1].msg3 = "Third line"; // line 3
+  myMsg[1].msg4 = "Fourth line"; // line 4
+  myMsg[1].msg5 = 0; // not display
+  iMi3.printScreen(PAGE_2,myMsg[1]);
+
 }

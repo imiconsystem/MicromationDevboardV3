@@ -1,19 +1,19 @@
-#include <iMi3Device.h>
+#include <MicromationDevboardV3.h>
 
-iMi3Device::iMi3DeviceConfig config = {
-    "iMi3Device",                                            // device name
+MicromationDevboardV3::MicromationDevboardV3Config config = {
+    "Mi3Dev",                                            // device name
     "dddddddd",                                              // device password
     "yourWiFiSSID",                                                    // WiFi SSID
     "yourWiFiPass",                                                  // WiFi password
     {"Custom1", "Custom2", "Custom3", "Custom4", "Custom5"}, // Custom field labels
     2,                                                       // mode 1 = AP, 2 = STA
     2,                                                       // OLED pages
-    false                                                     // debug mode
+    true                                                     // debug mode
 };
 
-iMi3Device iMi3(config);
+MicromationDevboardV3 iMi3(config);
 
-struct iMi3Device::iMi3SerialInput serailInputs;
+struct MicromationDevboardV3::iMi3SerialInput serailInputs;
 
 byte req[8] = { 0x02, 0x03, 0x00, 0x00, 0x00, 0x02, 0xC4, 0x38 };  // RS FS wind speed query command
 
@@ -47,9 +47,5 @@ void loop()
 void serailLoop() {
 
   iMi3.readSerial(SERIAL_INPUT1, serailInputs);
-  Serial.print("Data1: ");
-  Serial.println(iMi3.serialData.data1);
-  Serial.print("Data2: ");
-  Serial.println(iMi3.serialData.data2);
   
 }

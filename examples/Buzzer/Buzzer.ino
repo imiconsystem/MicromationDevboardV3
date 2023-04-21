@@ -88,10 +88,10 @@
 #define NOTE_D8 4699
 #define NOTE_DS8 4978
 
-#include <iMi3Device.h>
+#include <MicromationDevboardV3.h>
 
-iMi3Device::iMi3DeviceConfig config = {
-    "iMi3Device",                                            // device name
+MicromationDevboardV3::MicromationDevboardV3Config config = {
+    "Mi3Dev",                                            // device name
     "dddddddd",                                              // device password
     "i2",                                                    // WiFi SSID
     "im25092499",                                            // WiFi password
@@ -101,7 +101,7 @@ iMi3Device::iMi3DeviceConfig config = {
     true                                                     // debug mode
 };
 
-iMi3Device iMi3(config);
+MicromationDevboardV3 iMi3(config);
 
 void setup()
 {
