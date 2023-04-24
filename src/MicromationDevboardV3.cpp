@@ -106,7 +106,6 @@ void MicromationDevboardV3::doLoop(void)
 
     this->switchLoop();
     this->oledLoop();
-    this->serialLoop();
 
     if (this->getDataInt("dev_run_mode") == 2)
     {
@@ -932,58 +931,16 @@ void MicromationDevboardV3::printScreen(const uint8_t page, struct MicromationDe
 
 // SESRIAL INPUT
 
-void MicromationDevboardV3::readSerial(const uint8_t index, struct MicromationDevboardV3::iMi3SerialInput serialInput)
-{
-
-    if (index <= SERIAL_INPUTS)
-    {
-        this->serialData.name = serialInput.name;
-        this->serialInput[index].name = serialInput.name;
-        this->serialInput[index].buadrate = serialInput.buadrate;
-        for (int i = 0; i < 8; i++)
-        {
-            this->serialInput[index].request_command[i] = serialInput.request_command[i];
-        }
-    }
-}
-
 void MicromationDevboardV3::serialSetup()
 {
     Serial2.begin(4800); //
 }
 
-void MicromationDevboardV3::serialLoop()
+void MicromationDevboardV3::updateBaudRate(int baud)
 {
-    int baudrate = 4800;
-    int numBytes = 8;
-    byte buffQuery[8];
-
-    for (int i = 1; i <= SERIAL_INPUTS; i++)
-    {
-
-        unsigned long serialcurrentMillis = millis();
-
-        if (serialcurrentMillis - this->serialpreviousMillis >= 1000)
-        {
-            this->serialpreviousMillis = serialcurrentMillis;
-            if (this->serialInput[i].buadrate > 0)
-            {
-                if (this->debug)
-                {
-                    this->serialdebug("Serial: " + this->serialInput[i].name);
-                    this->serialdebug("Baudrate: " + String(this->serialInput[i].buadrate));
-                }
-
-                baudrate = this->serialInput[i].buadrate;
-                Serial2.updateBaudRate(baudrate);
-
-                memcpy(buffQuery, this->serialInput[i].request_command, numBytes);
-
-                this->SerialProcessData(buffQuery);
-            }
-        }
-    }
+    Serial2.updateBaudRate(baud);
 }
+
 
 void MicromationDevboardV3::SerialProcessData(byte buffQuery[8])
 {
@@ -1012,18 +969,20 @@ void MicromationDevboardV3::SerialProcessData(byte buffQuery[8])
 
     if (this->debug)
     {
-        this->serialdebug("ID: ");
-        this->serialdebug(String(ByteArray[0]));
-        this->serialdebug(" Data1: ");
-        this->serialdebug(String(Data1));
-        this->serialdebug(" Data2: ");
-        this->serialdebug(String(Data2));
-        this->serialdebug(" ");
+        Serial.print("ID: ");
+        Serial.println(String(ByteArray[0]));
+        Serial.print(" Data1: ");
+        Serial.println(String(Data1));
+        Serial.print(" Data2: ");
+        Serial.println(String(Data2));
+        Serial.println(" ");
     }
-
-    this->serialData.id = ByteArray[0];
-    this->serialData.data1 = Data1;
-    this->serialData.data2 = Data2;
+    if (ByteArray[0] > 0)
+    {
+        this->serialData.id = ByteArray[0];
+        this->serialData.data1 = Data1;
+        this->serialData.data2 = Data2;
+    }
 }
 
 // RELAYS
@@ -1057,7 +1016,7 @@ void MicromationDevboardV3::relayHi(int relay)
 {
     if (this->debug)
         this->serialdebug("PIN: " + String(relay) + " ON");
-        
+
     digitalWrite(relay, HIGH);
 }
 
@@ -1075,7 +1034,7 @@ bool MicromationDevboardV3::relayIsOn(int relay)
 
 void MicromationDevboardV3::serialdebug(String msg)
 {
-    unsigned int strlen = this->serialdebugmsg.length(); 
+    unsigned int strlen = this->serialdebugmsg.length();
 
     if (strlen > 1000)
     {

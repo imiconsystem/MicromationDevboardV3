@@ -47,7 +47,7 @@ class MicromationDevboardV3
 {
 public:
     // MicromationDevboardV3(String device_name, String device_password, int mode, int oledPage, bool debug);
-    struct  iMi3Config
+    struct iMi3Config
     {
         String device_name;
         String device_password;
@@ -59,7 +59,7 @@ public:
         bool debug;
     };
 
-    MicromationDevboardV3(struct  iMi3Config config);
+    MicromationDevboardV3(struct iMi3Config config);
     void doSetup(void);
     void doLoop(void);
     int getState(void);
@@ -82,12 +82,6 @@ public:
         String msg4;
         int msg5;
     };
-    struct iMi3SerialInput
-    {
-        String name;
-        int buadrate;
-        byte request_command[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-    };
 
     struct iMi3SerialData
     {
@@ -98,7 +92,6 @@ public:
     };
     struct iMi3SerialData serialData;
     void printScreen(const uint8_t page, struct MicromationDevboardV3::iMi3OledMessage message);
-    void readSerial(const uint8_t index, struct MicromationDevboardV3::iMi3SerialInput serialInput);
     int switchState = 0;
     int switchPressTime;
     bool switchIsPressed = false;
@@ -108,10 +101,11 @@ public:
     void relayHi(int relay);
     void relayLo(int relay);
     bool relayIsOn(int relay);
+    void SerialProcessData(byte buffQuery[8]);
+    void updateBaudRate(int baudrate);
 
 private:
     struct MicromationDevboardV3::iMi3OledMessage message[3];
-    struct MicromationDevboardV3::iMi3SerialInput serialInput[3];
     void setState(int state);
     void storageSetup(void);
     void switchSetup(void);
@@ -129,8 +123,8 @@ private:
     void oledDrawSysPage(void);
     void oledLogSetup(void);
     void serialSetup(void);
-    void serialLoop(void);
-    void SerialProcessData(byte buffQuery[8]);
+    
+    
     void relaySetup(void);
     String getStorage(const char *key);
     int getStorageInt(const char *key);
@@ -158,10 +152,10 @@ private:
     unsigned long webpreviousMillis = 0;
     unsigned long devinterval = 30000;
     unsigned long serpreviousMillis = 0;
-    unsigned long oledpreviousMillis = 0; // will store last time LED was updated
+    unsigned long oledpreviousMillis = 0;   // will store last time LED was updated
     unsigned long serialpreviousMillis = 0; // will store last time LED was updated
-    unsigned long debugpreviousMillis = 0; // will store last time LED was updated
-    
+    unsigned long debugpreviousMillis = 0;  // will store last time LED was updated
+
     void serialdebug(String msg);
     String serialdebugmsg = "";
 };
