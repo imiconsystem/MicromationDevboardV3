@@ -61,6 +61,6 @@ void loop()
 }
 
 ```
-For more example please check the example menu in arduino IDE.
+For more examples please check the example menu in arduino IDE.
 
 [Learn more about Micromation Dev board V3](https://www.imiconsystem.com/product/new-micromation-dev-board-v3-lite-with-esp32-and-enclosure/)
