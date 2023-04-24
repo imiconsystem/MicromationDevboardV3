@@ -8,7 +8,7 @@
 // กำหนดหมายเลขพินที่ตรงกับฮาร์ดแวร์ของบอร์ด
 #define RXD2 16 // กำหนดหมายเลข GPIO 16 สำหรับขา Rx
 #define TXD2 17 // กำหนดหมายเลข GPIO 17 สำหรับขา Tx
-#define SW 2    // Custom swithch
+#define SW 4    // Custom swithch
 
 #define BUZZZER_PIN 5 // piezo buzzer
 
