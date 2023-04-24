@@ -1,8 +1,17 @@
-## Micromation Dev board V3 Library for Arduino IDE.
+## Micromation Dev board V3 Library for Arduino IDE >= 2.0.0
 This library is designed to make it easy to use micromation dev board V3 with ESP32 relays module, Builtin wifi management system, custom HTML webpage, supported 3 pages OLED screen, custom switch, relays, RS485, buzzer. It is easy to use for not only beginners but also experienced users.
 
 # Getting start guide
 
+## How to install
+- Open Arduino IDE app
+- Click Library manager on sidebar menu
+- Search for MicromationDevboardV3
+- Select any version then click install
+
+## How to use
+
+Example code to start using the library.
 ```
 #include <iMi3Device.h>
 
@@ -52,5 +61,6 @@ void loop()
 }
 
 ```
+For more example please check the example menu in arduino IDE.
 
 [Learn more about Micromation Dev board V3](https://www.imiconsystem.com/product/new-micromation-dev-board-v3-lite-with-esp32-and-enclosure/)
