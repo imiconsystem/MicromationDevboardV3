@@ -767,6 +767,9 @@ void MicromationDevboardV3::oledDrawState()
     case 3:
         oledDrawPage3();
         break;
+    case 4:
+        oledDrawPage4();
+        break;
     case 0:
         oledDrawSysPage();
         break;
@@ -881,6 +884,34 @@ void MicromationDevboardV3::oledDrawPage3(void)
         u8g2.setFont(u8g2_font_6x12_t_symbols);
         u8g2.setFont(u8g2_font_7_Seg_33x19_mn);
         u8g2.drawStr(30, 0, u8x8_u8toa(this->message[2].msg5 > 999 ? 999 : this->message[2].msg5, 3));
+    }
+}
+
+void MicromationDevboardV3::oledDrawPage4(void)
+{
+    // Page breadcum
+    // u8g2.drawBox(111, 29, 6, 3);
+    // u8g2.drawFrame(93, 29, 6, 3);
+    // u8g2.drawFrame(102, 29, 6, 3);
+    // u8g2.drawFrame(111, 29, 6, 3);
+    // u8g2.drawFrame(120, 29, 6, 3);
+
+    if (this->message[3].tp == 1)
+    {
+        u8g2.setFont(u8g2_font_5x8_tf);
+        u8g2.drawStr(0, 10, this->message[3].msg1.c_str());
+        u8g2.drawStr(0, 16, this->message[3].msg2.c_str());
+        u8g2.drawStr(0, 24, this->message[3].msg3.c_str());
+        u8g2.drawStr(0, 32, this->message[3].msg4.c_str());
+    }
+    else if (this->message[3].tp == 2)
+    {
+        u8g2.setFont(u8g2_font_squeezed_b7_tr);
+        u8g2.drawStr(0, 8, this->message[3].msg1.c_str());
+        u8g2.drawStr(91, 30, this->message[3].msg2.c_str());
+        u8g2.setFont(u8g2_font_6x12_t_symbols);
+        u8g2.setFont(u8g2_font_7_Seg_33x19_mn);
+        u8g2.drawStr(30, 0, u8x8_u8toa(this->message[3].msg5 > 999 ? 999 : this->message[3].msg5, 3));
     }
 }
 

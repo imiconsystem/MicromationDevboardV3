@@ -28,10 +28,11 @@
 #ifndef MicromationDevboardV3_h
 #define MicromationDevboardV3_h
 
-#define OLED_PAGES 3 // จำนวนหน้าที่จะแสดงผลบนจอ OLED สงวนหน้าสุดท้ายสำหรับการแสดงผลของระบบ
+#define OLED_PAGES 4 // จำนวนหน้าที่จะแสดงผลบนจอ OLED สงวนหน้าสุดท้ายสำหรับการแสดงผลของระบบ
 #define PAGE_1 1
 #define PAGE_2 2
 #define PAGE_3 3
+#define PAGE_4 4
 
 #define SERIAL_INPUTS 3 // จำนวน Serial Input ที่ใช้งานได้
 #define SERIAL_INPUT1 1
@@ -86,7 +87,7 @@ public:
     struct iMi3SerialData
     {
         String name;
-        String id;
+        int id;
         int data1;
         int data2;
     };
@@ -105,7 +106,7 @@ public:
     void updateBaudRate(int baudrate);
 
 private:
-    struct MicromationDevboardV3::iMi3OledMessage message[3];
+    struct MicromationDevboardV3::iMi3OledMessage message[4];
     void setState(int state);
     void storageSetup(void);
     void switchSetup(void);
@@ -120,6 +121,7 @@ private:
     void oledDrawPage1(void);
     void oledDrawPage2(void);
     void oledDrawPage3(void);
+    void oledDrawPage4(void);
     void oledDrawSysPage(void);
     void oledLogSetup(void);
     void serialSetup(void);

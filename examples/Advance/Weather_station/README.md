@@ -1,13 +1,15 @@
-# Ready to use Anemometer with alarm
+# Ready to use Weather station
 
 ![Anemometer with alarm](https://github.com/imiconsystem/ready2u-anemometer-alarm/blob/main/images/cover.png)
 
-ระบบวัดอุณหภูมิและความชื้น เพื่อการแจ้งเตือน หรือควบคุมสั่งการอัตโนมัติ พร้อม Web Monitoring & WiFi management สำหรับ New Micromation Dev Board V3 with ESP32 ใช้ในการแสดงผลค่าต่างที่วัดได้ และการตั้งค่าต่างๆ ผ่านเว็บบราวเซอร์
+ระบบ Weather station Web Monitoring เพื่อการแจ้งเตือน หรือควบคุมสั่งการอัตโนมัติ พร้อม Web Monitoring & WiFi management สำหรับ New Micromation Dev Board V3 with ESP32 ใช้ในการแสดงผลค่าต่างที่วัดได้ และการตั้งค่าต่างๆ ผ่านเว็บบราวเซอร์
 
 
 ## ฟีเจอร์การแสดงผลและสั่งงาน
 - แสดงผลค่าอุณหภูมิในอากาศ
 - แสดงผลค่าความชื้นสัมพัทธ์ในอากาศ
+- แสดงผลค่าความเร็วลม
+- แสดงผลค่าทิศทางลม
 - แสดงสถานะการควบคุมสั่งงานผ่าน RELAY
 - แสดงสถานะเงื่อนไขสั่งงานที่ได้ตั้งค่าไว้ล่วงหน้า
 
@@ -21,6 +23,8 @@
 1. บอร์ดพัฒนา New Micromation Dev Board V3 with ESP32 [>> เรียนรู้เพิ่มเติมและสั่งซื้อ](https://www.imiconsystem.com/product/new-micromation-dev-board-v3-lite-with-esp32-and-enclosure/)
 
 2. BGT-WSD2 Atmospheric Temperature & Humidity Sensor Modbus RS485 เซ็นเซอร์วัดอุณหภูมิและความชื้นอากาศภายนอก [>> เรียนรู้เพิ่มเติมและสั่งซื้อ](https://www.imiconsystem.com/product/rs485-atmospheric-%e0%b9%80%e0%b8%8b%e0%b9%87%e0%b8%99%e0%b9%80%e0%b8%8b%e0%b8%ad%e0%b8%a3%e0%b9%8c%e0%b8%a7%e0%b8%b1%e0%b8%94%e0%b8%ad%e0%b8%b8%e0%b8%93%e0%b8%ab%e0%b8%a0%e0%b8%b9%e0%b8%a1%e0%b8%b4/)
+
+3. RS-FX-N01 RS485 Modbus เซ็นเซอร์วัดทิศทางลม Wind Direction Sensor [>> เรียนรู้เพิ่มเติมและสั่งซื้อ](https://www.imiconsystem.com/product/rs-fx-n01-rs485-%e0%b9%80%e0%b8%8b%e0%b9%87%e0%b8%99%e0%b9%80%e0%b8%8b%e0%b8%ad%e0%b8%a3%e0%b9%8c%e0%b8%a7%e0%b8%b1%e0%b8%94%e0%b8%97%e0%b8%b4%e0%b8%a8%e0%b8%97%e0%b8%b2%e0%b8%87%e0%b8%a5%e0%b8%a1/)
 
 3. RS-485 HUB [>> เรียนรู้เพิ่มเติมและสั่งซื้อ](https://www.imiconsystem.com/product/rs-485-hub/)
 

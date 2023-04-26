@@ -1,11 +1,11 @@
-//  ระบบวัดอุณหภูมิและความชื้น เพื่อการแจ้งเตือน หรือควบคุมสั่งการอัตโนมัติ พร้อม Web Monitoring & WiFi management ใช้ในการแสดงผลค่าต่างที่วัดได้ และการตั้งค่าต่างๆ ผ่านเว็บบราวเซอร์
+//  ระบบ Weather station Web Monitoring เพื่อการแจ้งเตือน หรือควบคุมสั่งการอัตโนมัติ พร้อม Web Monitoring & WiFi management ใช้ในการแสดงผลค่าต่างที่วัดได้ และการตั้งค่าต่างๆ ผ่านเว็บบราวเซอร์
 //
 // ไฟล์ Sketch ทั้งหมดประกอบด้วย
 // 01_oled.ino
 // 02_serial.ino
 // 03_webpage.ino
 // 04_relay.ino
-// Temp_Humi_monitoring.ino
+// Weather_station.ino
 
 // Learn more at https://github.com/imiconsystem/MicromationDevboardV3
 
@@ -16,9 +16,9 @@ MicromationDevboardV3::iMi3Config config = {
     "dddddddd",                                            // device password
     "yourWiFiSSID",                                        // WiFi SSID
     "yourWiFiPass",                                        // WiFi password
-    {"MaxTemp1", "MaxTemp2", "MaxHumi1", "MaxHumi2", "Unuse"}, // Custom field labels
+    {"MaxTemp", "MaxHumi", "MaxWinSpd", "MaxWindDir", "Unuse"}, // Custom field labels
     2,                                                     // mode 1 = AP, 2 = STA
-    2,                                                     // OLED pages
+    4,                                                     // OLED pages
     false                                                  // debug mode
 };
 
@@ -35,11 +35,15 @@ struct WEBINFO R4info = {"OFF", "", "normal"};
 
 MicromationDevboardV3 iMi3(config);
 
-int32_t setVar1, setVar2, setVar3, setVar4;
+int32_t setVar1, setVar2, setVar3, setVar4, WINSPD, WINDIR;
 float_t TEMP, HUMI;
 
 void setup()
 {
+  TEMP = 0;
+  HUMI = 0;
+  WINSPD = 0;
+  WINDIR = 0;
   setVar1 = setVar2 = setVar3 = setVar4 = 0;
 
   setVar1 = iMi3.getDataInt("custom1");
