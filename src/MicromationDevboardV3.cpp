@@ -865,11 +865,23 @@ void MicromationDevboardV3::oledDrawPage3(void)
     // u8g2.drawFrame(111, 29, 6, 3);
     // u8g2.drawFrame(120, 29, 6, 3);
 
-    u8g2.setFont(u8g2_font_5x8_tf);
-    u8g2.drawStr(0, 6, message[2].msg1.c_str());
-    u8g2.drawStr(0, 14, message[2].msg2.c_str());
-    u8g2.drawStr(0, 22, message[2].msg3.c_str());
-    u8g2.drawStr(0, 30, message[2].msg4.c_str());
+    if (this->message[2].tp == 1)
+    {
+        u8g2.setFont(u8g2_font_5x8_tf);
+        u8g2.drawStr(0, 10, this->message[2].msg1.c_str());
+        u8g2.drawStr(0, 16, this->message[2].msg2.c_str());
+        u8g2.drawStr(0, 24, this->message[2].msg3.c_str());
+        u8g2.drawStr(0, 32, this->message[2].msg4.c_str());
+    }
+    else if (this->message[2].tp == 2)
+    {
+        u8g2.setFont(u8g2_font_squeezed_b7_tr);
+        u8g2.drawStr(0, 8, this->message[2].msg1.c_str());
+        u8g2.drawStr(91, 30, this->message[2].msg2.c_str());
+        u8g2.setFont(u8g2_font_6x12_t_symbols);
+        u8g2.setFont(u8g2_font_7_Seg_33x19_mn);
+        u8g2.drawStr(30, 0, u8x8_u8toa(this->message[2].msg5 > 999 ? 999 : this->message[2].msg5, 3));
+    }
 }
 
 void MicromationDevboardV3::oledDrawSysPage(void)
@@ -902,7 +914,7 @@ void MicromationDevboardV3::oledDrawSysPage(void)
         u8g2.drawStr(15, 8, this->getData("wifi_ssid", this->wifi_ssid).c_str()); // STA mode
         u8g2.drawStr(15, 17, WiFiRSSI.c_str());
         u8g2.drawFrame(10, 21, 20, 11);
-        u8g2.drawStr(16, 30, devMode[this->getDataInt("dev_run_mode") - 1].c_str());
+        u8g2.drawStr(16, 30, devMode[1].c_str());
         u8g2.drawStr(40, 17, staIP.c_str());
         String domain = this->getData("device_name") + ".local";
         u8g2.drawStr(40, 25, domain.c_str());
@@ -913,6 +925,9 @@ void MicromationDevboardV3::oledDrawSysPage(void)
         u8g2.drawStr(15, 17, this->getData("device_password", this->device_password).c_str());
         // u8g2.drawStr(50, 17, apIP.toString().c_str());
         u8g2.drawStr(15, 26, apIP.toString().c_str()); // Reset state
+
+        u8g2.drawFrame(90, 21, 20, 11);
+        u8g2.drawStr(96, 30, devMode[0].c_str());
     }
 }
 
@@ -940,7 +955,6 @@ void MicromationDevboardV3::updateBaudRate(int baud)
 {
     Serial2.updateBaudRate(baud);
 }
-
 
 void MicromationDevboardV3::SerialProcessData(byte buffQuery[8])
 {

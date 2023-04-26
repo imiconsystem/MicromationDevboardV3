@@ -19,13 +19,6 @@ void serailLoop() {
     previousMillis = currentMillis;
     iMi3.SerialProcessData(buffQuery);
 
-    maxSpd1 = iMi3.getDataInt("custom1");
-    maxSpd2 = iMi3.getDataInt("custom2");
-    maxSpd3 = iMi3.getDataInt("custom3");
-    maxSpd4 = iMi3.getDataInt("custom4");
-    maxSpd5 = iMi3.getDataInt("custom5");
-
-
     Data1 = iMi3.serialData.data1 * 0.1;
 
     if (iMi3.serialData.data1 > 0) {
