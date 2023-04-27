@@ -26,11 +26,7 @@
 
 ## Hardware setup
 
-ใช้ Micromation – Lite with RS-485 Module ต่อใช้งานร่วมกับ BGT-WSD2 เซ็นเซอร์อุณหภูมิและความชื้นอากาศ ผ่าน RTU / RS-485 ด้วยโปรโตคอล Modbus Protocol โดยใช้คอนโทรลเลอร์ ESP32 Dev Kit V1
-
-![RS485 Temperature and Humidity](https://github.com/imiconsystem/ready2u-rs485-tem-humi/blob/main/images/4.jpg)
-
-** โปรดระมัดระวัง! อย่าต่อแหล่งจ่ายไฟ Power in และ usb ในเวลาเดียวกัน เพราะจะส่งผลให้บอร์ดได้รับความเสียหาย ในบางครั้งอาจรวมไปถึงคอมพิวเตอร์
+ใช้ Micromation – Lite with RS-485 Module ต่อใช้งานร่วมกับ BGT-WSD2 เซ็นเซอร์อุณหภูมิและความชื้นอากาศ ผ่าน RTU / RS-485 ด้วยโปรโตคอล Modbus Protocol โดยใช้คอนโทรลเลอร์ ESP32 Dev Kit V1 [>> เรียนรู้เพิ่มเติม](https://www.imiconsystem.com/product/rs485-atmospheric-%e0%b9%80%e0%b8%8b%e0%b9%87%e0%b8%99%e0%b9%80%e0%b8%8b%e0%b8%ad%e0%b8%a3%e0%b9%8c%e0%b8%a7%e0%b8%b1%e0%b8%94%e0%b8%ad%e0%b8%b8%e0%b8%93%e0%b8%ab%e0%b8%a0%e0%b8%b9%e0%b8%a1%e0%b8%b4/)
 
 
 ## Software setup

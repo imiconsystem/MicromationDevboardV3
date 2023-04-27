@@ -1,3 +1,14 @@
+//  Anemometer with alarm | วัดความเร็วลม เพื่อการแจ้งเตือน หรือควบคุมสั่งการอัตโนมัติ พร้อม Web Monitoring & WiFi management ใช้ในการแสดงผลค่าต่างที่วัดได้ และการตั้งค่าต่างๆ ผ่านเว็บบราวเซอร์
+//
+// ไฟล์ Sketch ทั้งหมดประกอบด้วย
+// 01_oled.ino
+// 02_serial.ino
+// 03_webpage.ino
+// 04_relay.ino
+// Anemometer.ino
+
+// Learn more at https://github.com/imiconsystem/MicromationDevboardV3
+
 #include <MicromationDevboardV3.h>
 
 MicromationDevboardV3::iMi3Config config = {
