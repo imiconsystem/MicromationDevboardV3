@@ -1,6 +1,6 @@
 # Ready to use Anemometer with alarm
 
-![Anemometer with alarm](https://github.com/imiconsystem/ready2u-anemometer-alarm/blob/main/images/cover.png)
+![RS485 Temperature and Humidity](https://github.com/imiconsystem/ready2u-rs485-tem-humi/blob/ceb66e98a28e992e84ce243050311125ebc9b003/images/cover.JPG)
 
 ระบบวัดอุณหภูมิและความชื้น เพื่อการแจ้งเตือน หรือควบคุมสั่งการอัตโนมัติ พร้อม Web Monitoring & WiFi management สำหรับ New Micromation Dev Board V3 with ESP32 ใช้ในการแสดงผลค่าต่างที่วัดได้ และการตั้งค่าต่างๆ ผ่านเว็บบราวเซอร์
 

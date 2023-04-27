@@ -1,6 +1,6 @@
 # Ready to use Weather station
 
-![Anemometer with alarm](https://github.com/imiconsystem/ready2u-anemometer-alarm/blob/main/images/cover.png)
+![Weather station](https://github.com/imiconsystem/ready2u-rs485-weather-station/blob/main/images/cover.JPG)
 
 ระบบ Weather station Web Monitoring เพื่อการแจ้งเตือน หรือควบคุมสั่งการอัตโนมัติ พร้อม Web Monitoring & WiFi management สำหรับ New Micromation Dev Board V3 with ESP32 ใช้ในการแสดงผลค่าต่างที่วัดได้ และการตั้งค่าต่างๆ ผ่านเว็บบราวเซอร์
 
