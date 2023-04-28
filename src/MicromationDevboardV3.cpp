@@ -429,15 +429,15 @@ void MicromationDevboardV3::wifiapSetup(bool isAPSET)
 <h1>Set max values</h1>\
 </legend>\
 <h1>%s</h1>\
-<div><input type=\"number\"  name=\"custom1\" value=\"%ld\" size=\"5\"></div>\
+<div><input type=\"number\"  name=\"custom1\" value=\"%d\" size=\"5\"></div>\
 <h1>%s</h1>\
-<div><input type=\"number\"  name=\"custom2\" value=\"%ld\" size=\"5\"></div>\
+<div><input type=\"number\"  name=\"custom2\" value=\"%d\" size=\"5\"></div>\
 <h1>%s</h1>\
-<div><input type=\"number\"  name=\"custom3\" value=\"%ld\" size=\"5\"></div>\
+<div><input type=\"number\"  name=\"custom3\" value=\"%d\" size=\"5\"></div>\
 <h1>%s</h1>\
-<div><input type=\"number\"  name=\"custom4\" value=\"%ld\" size=\"5\"></div>\
+<div><input type=\"number\"  name=\"custom4\" value=\"%d\" size=\"5\"></div>\
 <h1>%s</h1>\
-<div><input type=\"number\"  name=\"custom5\" value=\"%ld\" size=\"5\"></div>\
+<div><input type=\"number\"  name=\"custom5\" value=\"%d\" size=\"5\"></div>\
 </fieldset>\
 <fieldset>\
 <legend>\
@@ -459,7 +459,7 @@ void MicromationDevboardV3::wifiapSetup(bool isAPSET)
 </body>\
 </html>",
 
-                 this->getData("wifi_ssid").c_str(), this->getData("wifi_password").c_str(), this->custom_field_label[0].c_str(), this->getData("custom1").toInt(), this->custom_field_label[1].c_str(), this->getData("custom2").toInt(), this->custom_field_label[2].c_str(), this->getData("custom3").toInt(), this->custom_field_label[3].c_str(), this->getData("custom4").toInt(), this->custom_field_label[4].c_str(), this->getData("custom5").toInt(), this->getData("device_name").c_str(), this->getData("device_password").c_str());
+                 this->getData("wifi_ssid").c_str(), this->getData("wifi_password").c_str(), this->custom_field_label[0].c_str(), this->getDataInt("custom1"), this->custom_field_label[1].c_str(), this->getDataInt("custom2"), this->custom_field_label[2].c_str(), this->getDataInt("custom3"), this->custom_field_label[3].c_str(), this->getDataInt("custom4"), this->custom_field_label[4].c_str(), this->getDataInt("custom5"), this->getData("device_name").c_str(), this->getData("device_password").c_str());
 
         this->systemhtml = html;
 
