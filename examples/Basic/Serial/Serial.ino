@@ -5,8 +5,9 @@ MicromationDevboardV3::iMi3Config config = {
   "dddddddd",                                                 // device password
   "yourWiFiSSID",                                             // WiFi SSID
   "yourWiFiPass",                                             // WiFi password
-  { "Custom1", "Custom2", "Custom3", "Custom4", "Custom5" },  // Custom field labels
+  {"Custom1", "Custom2", "Custom3", "Custom4", "Custom5","Custom6", "Custom7", "Custom8", "Custom9", "Custom10"}, // Custom field labels
   2,                                                          // mode 1 = AP, 2 = STA
+  4,                                                       // relayChanels 4 OR 9 
   2,                                                          // OLED pages
   false                                                        // debug mode
 };

@@ -19,16 +19,18 @@
 #define R2 19
 #define R3 18
 #define R4 32
-#ifdef IMIV3PRO
+
 #define R5 25
 #define R6 26
 #define R7 14
-#define R8 26
 #define R8 27
-#endif
+#define R9 33
+
 
 #ifndef MicromationDevboardV3_h
 #define MicromationDevboardV3_h
+
+#define RELAY_CHANNELS 4
 
 #define OLED_PAGES 4 // จำนวนหน้าที่จะแสดงผลบนจอ OLED สงวนหน้าสุดท้ายสำหรับการแสดงผลของระบบ
 #define PAGE_1 1
@@ -41,7 +43,7 @@
 #define SERIAL_INPUT2 2
 #define SERIAL_INPUT3 3
 
-#define CUSTOM_FIELDS 5 // จำนวน Custom Field ที่ใช้งานได้
+#define CUSTOM_FIELDS 10 // จำนวน Custom Field ที่ใช้งานได้
 
 #include <Arduino.h>
 #include <U8g2lib.h>
@@ -58,6 +60,7 @@ public:
         String wifi_password;
         String custom_field_label[CUSTOM_FIELDS];
         int mode;
+        int relayChanels;
         int oledPages;
         bool debug;
     };
@@ -143,12 +146,13 @@ private:
     String device_ip;
     String wifi_ssid = "";
     String wifi_password = "";
-    String custom_field_label[CUSTOM_FIELDS] = {"Max val1", "Max val2", "Max val3", "Max val4", "Max val5"};
+    String custom_field_label[CUSTOM_FIELDS] = {"Max val1", "Max val2", "Max val3", "Max val4", "Max val5", "Max val6", "Max val7", "Max val8", "Max val9", "Max val10"};
     bool debug = false;
     String log_string = "";
     int state;
     int mode = 1;
     int oledPages = 1;
+    int relayChanels = 4;
     int btnState;
     int CountPress;
     String systemhtml = "";

@@ -16,8 +16,9 @@ MicromationDevboardV3::iMi3Config config = {
     "dddddddd",                                         // device password
     "yourWiFiSSID",                                               // WiFi SSID
     "yourWiFiPass",                                       // WiFi password
-    {"MaxSP1", "MaxSP2", "MaxSP3", "MaxSP4", "MaxSP5"}, // Custom field labels
+    {"MaxSP1", "MaxSP2", "MaxSP3", "MaxSP4", "MaxSP5","MaxSP6", "MaxSP7", "MaxSP8", "MaxSP9", "MaxSP10"}, // Custom field labels
     2,                                                  // mode 1 = AP, 2 = STA
+    4,                                                       // relayChanels 4 OR 9 
     1,                                                  // OLED pages
     false                                               // debug mode
 };

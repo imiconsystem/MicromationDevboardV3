@@ -35,11 +35,16 @@ MicromationDevboardV3::MicromationDevboardV3(struct iMi3Config config)
     this->wifi_password = config.wifi_password;
     this->mode = config.mode;
     this->oledPages = config.oledPages;
+    if (config.relayChanels == 9){
+        this->relayChanels = 9;
+    }else{
+        this->relayChanels = RELAY_CHANNELS;
+    }
     if (config.oledPages > OLED_PAGES)
     {
         this->oledPages = OLED_PAGES;
     }
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 10; i++)
     {
         this->custom_field_label[i] = config.custom_field_label[i];
     }
@@ -403,7 +408,7 @@ void MicromationDevboardV3::wifiapSetup(bool isAPSET)
         // server.on("/", this->handleConfig);
         String dev_name = this->getData("device_name", this->device_name);
         char html[4000];
-        snprintf(html, 4000, "<html>\
+        snprintf(html, 4470, "<html>\
 <head>\
 <meta charset=\"UTF-8\" />\
 <title>System configuration.</title>\
@@ -438,6 +443,16 @@ void MicromationDevboardV3::wifiapSetup(bool isAPSET)
 <div><input type=\"number\"  name=\"custom4\" value=\"%d\" size=\"5\"></div>\
 <h1>%s</h1>\
 <div><input type=\"number\"  name=\"custom5\" value=\"%d\" size=\"5\"></div>\
+<h1>%s</h1>\
+<div><input type=\"number\"  name=\"custom6\" value=\"%d\" size=\"5\"></div>\
+<h1>%s</h1>\
+<div><input type=\"number\"  name=\"custom7\" value=\"%d\" size=\"5\"></div>\
+<h1>%s</h1>\
+<div><input type=\"number\"  name=\"custom8\" value=\"%d\" size=\"5\"></div>\
+<h1>%s</h1>\
+<div><input type=\"number\"  name=\"custom9\" value=\"%d\" size=\"5\"></div>\
+<h1>%s</h1>\
+<div><input type=\"number\"  name=\"custom510\" value=\"%d\" size=\"5\"></div>\
 </fieldset>\
 <fieldset>\
 <legend>\
@@ -459,7 +474,7 @@ void MicromationDevboardV3::wifiapSetup(bool isAPSET)
 </body>\
 </html>",
 
-                 this->getData("wifi_ssid").c_str(), this->getData("wifi_password").c_str(), this->custom_field_label[0].c_str(), this->getDataInt("custom1"), this->custom_field_label[1].c_str(), this->getDataInt("custom2"), this->custom_field_label[2].c_str(), this->getDataInt("custom3"), this->custom_field_label[3].c_str(), this->getDataInt("custom4"), this->custom_field_label[4].c_str(), this->getDataInt("custom5"), this->getData("device_name").c_str(), this->getData("device_password").c_str());
+                 this->getData("wifi_ssid").c_str(), this->getData("wifi_password").c_str(), this->custom_field_label[0].c_str(), this->getDataInt("custom1"), this->custom_field_label[1].c_str(), this->getDataInt("custom2"), this->custom_field_label[2].c_str(), this->getDataInt("custom3"), this->custom_field_label[3].c_str(), this->getDataInt("custom4"), this->custom_field_label[4].c_str(), this->getDataInt("custom5"), this->custom_field_label[5].c_str(), this->getDataInt("custom6"), this->custom_field_label[6].c_str(), this->getDataInt("custom7"), this->custom_field_label[7].c_str(), this->getDataInt("custom8"), this->custom_field_label[8].c_str(), this->getDataInt("custom9"), this->custom_field_label[9].c_str(), this->getDataInt("custom10"), this->getData("device_name").c_str(), this->getData("device_password").c_str());
 
         this->systemhtml = html;
 
@@ -692,6 +707,7 @@ void MicromationDevboardV3::saveConfig()
             {}, // Max value label
             1,
             2,    // mode 1 = AP, 2 = STA
+            4,    // 4 or 9 chanels
             false // debug mode
         });
 
@@ -1043,7 +1059,7 @@ void MicromationDevboardV3::relaySetup()
     relayLo(R3);
     relayLo(R4);
 
-#ifdef IMIV3PRO
+if(this->relayChanels == 9){
     pinMode(R5, OUTPUT);
     pinMode(R6, OUTPUT);
     pinMode(R7, OUTPUT);
@@ -1054,7 +1070,8 @@ void MicromationDevboardV3::relaySetup()
     relayLo(R7);
     relayLo(R8);
     relayLo(R9);
-#endif
+}
+
 }
 
 void MicromationDevboardV3::relayHi(int relay)
