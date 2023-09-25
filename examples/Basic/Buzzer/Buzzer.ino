@@ -93,8 +93,8 @@
 MicromationDevboardV3::iMi3Config config = {
     "Mi3Dev",                                            // device name
     "dddddddd",                                              // device password
-    "i2",                                                    // WiFi SSID
-    "im25092499",                                            // WiFi password
+    "SSID",                                                    // WiFi SSID
+    "PASSWORD",                                            // WiFi password
     {"Custom1", "Custom2", "Custom3", "Custom4", "Custom5","Custom6", "Custom7", "Custom8", "Custom9", "Custom10"}, // Custom field labels
     2,                                                       // mode 1 = AP, 2 = STA
     4,                                                       // relayChanels 4 OR 9 

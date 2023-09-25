@@ -41,7 +41,7 @@ void loop()
     Serial.println(iMi3.getDataInt("dev_run_mode"));
     Serial.print("Device name (SSID): ");
     Serial.println(iMi3.getData("device_name"));
-    Serial.print("Devvice pass: ");
+    Serial.print("Device pass: ");
     Serial.println(iMi3.getData("device_password"));
   }
 }
